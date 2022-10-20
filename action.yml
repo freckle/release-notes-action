@@ -32,9 +32,9 @@ runs:
   steps:
     - id: run
       env:
-        FILE=${{ inputs.version }}
-        VERSION=${{ inputs.file }}
-        HEADER_REGEX=${{ inputs.header-regex }}
+        FILE: ${{ inputs.version }}
+        VERSION: ${{ inputs.file }}
+        HEADER_REGEX: ${{ inputs.header-regex }}
       shell: bash run: |
         path=$(mktemp)
         echo "path=$path" >>"$GITHUB_OUTPUT"
