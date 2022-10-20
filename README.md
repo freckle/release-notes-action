@@ -30,7 +30,7 @@ steps:
 
 - **version**: Version to locate
 
-  Default is empty which means first (assumed to be latest)
+  Default is empty which means first (assumed to be latest).
 
 - **version-header-regex**: Regular expression used to match headers.
 
