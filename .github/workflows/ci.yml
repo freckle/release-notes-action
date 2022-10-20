@@ -9,33 +9,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - id: latest
+      - id: release-notes
         uses: ./
         with:
           file: ./files/CHANGELOG.md
 
-      # - id: explicit
-      #   uses: ./
-      #   with:
-      #     file: ./files/CHANGELOG.md
-      #     version: 2.2.0.0
-
-      # - id: explicit-v
-      #   uses: ./
-      #   with:
-      #     file: ./files/CHANGELOG.md
-      #     version: v2.2.0.0
-
-      # - id: not-found
-      #   uses: ./
-      #   with:
-      #     file: ./files/CHANGELOG.md
-      #     version: v42.42.42
-
       - run: |
-          [[ ${{ steps.latest.outputs.found }} -eq 'true' ]]
+          actual=${{ steps.release-notes.outputs.path }}
+          expected=$(mktemp)
 
-          cat >expected.txt <<'EOM'
+          cat >"$expected" <<'EOM'
           ## [v2.2.1.0](https://github.com/freckle/platform/compare/v2.2.0.0...v2.2.1.0)
 
           - Support a single `.platform.yaml`
@@ -86,8 +69,22 @@ jobs:
 
           EOM
 
-          cat >actual.txt <<'EOM'
-          ${{ steps.latest.outputs.body }}
-          EOM
+          diff "$expected" "$actual"
 
-          diff expected.txt actual.txt
+      # - id: explicit
+      #   uses: ./
+      #   with:
+      #     file: ./files/CHANGELOG.md
+      #     version: 2.2.0.0
+
+      # - id: explicit-v
+      #   uses: ./
+      #   with:
+      #     file: ./files/CHANGELOG.md
+      #     version: v2.2.0.0
+
+      # - id: not-found
+      #   uses: ./
+      #   with:
+      #     file: ./files/CHANGELOG.md
+      #     version: v42.42.42
