@@ -31,11 +31,11 @@ runs:
   using: composite
   steps:
     - id: run
+      shell: bash
       env:
         FILE: ${{ inputs.file }}
         VERSION: ${{ inputs.version }}
         HEADER_REGEX: ${{ inputs.header-regex }}
-      shell: bash
       run: |
         path=$(mktemp)
         echo "path=$path" >>"$GITHUB_OUTPUT"
