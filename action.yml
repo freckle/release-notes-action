@@ -32,8 +32,8 @@ runs:
   steps:
     - id: run
       env:
-        FILE: ${{ inputs.version }}
-        VERSION: ${{ inputs.file }}
+        FILE: ${{ inputs.file }}
+        VERSION: ${{ inputs.version }}
         HEADER_REGEX: ${{ inputs.header-regex }}
       shell: bash
       run: |
