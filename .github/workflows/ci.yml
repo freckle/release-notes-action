@@ -14,8 +14,6 @@ jobs:
         uses: ./
         with:
           file: ./test/CHANGELOG.md
-      - run: |
-          diff test/latest.md "${{ steps.release-notes.outputs.path }}"
 
       - id: release-notes-2.2
         name: "Release notes for an explicit version"
@@ -23,8 +21,6 @@ jobs:
         with:
           file: ./test/CHANGELOG.md
           version: 2.2.0.0
-      - run: |
-          diff test/v2.2.0.0.md "${{ steps.release-notes-2.2.outputs.path }}"
 
       - id: release-notes-v2.2
         name: "Release notes for an explicit version (with v-prefix)"
@@ -32,8 +28,6 @@ jobs:
         with:
           file: ./test/CHANGELOG.md
           version: v2.2.0.0
-      - run: |
-          diff test/v2.2.0.0.md "${{ steps.release-notes-v2.2.outputs.path }}"
 
       - id: release-notes-not-found
         name: "Release notes for non-existent version"
@@ -41,8 +35,10 @@ jobs:
         with:
           file: ./test/CHANGELOG.md
           version: v42.42.42
-      - run: |
-          if [[ -s "${{ steps.release-notes-not-found.outputs.path }}" ]]; then
-            echo "release-notes were incorrectly found for v42.42.42" >&2
-            exit 1
-          fi
+
+      - name: Assertions
+        run: |
+          diff test/latest.md "${{ steps.release-notes.outputs.path }}"
+          diff test/v2.2.0.0.md "${{ steps.release-notes-2.2.outputs.path }}"
+          diff test/v2.2.0.0.md "${{ steps.release-notes-v2.2.outputs.path }}"
+          [[ ! -s "${{ steps.release-notes-not-found.outputs.path }}" ]]
