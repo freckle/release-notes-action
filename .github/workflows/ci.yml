@@ -9,27 +9,27 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - id: release-notes
+      - id: release-notes-1
         name: "Release notes for latest version"
         uses: ./
         with:
           file: ./test/CHANGELOG.md
 
-      - id: release-notes-2.2
+      - id: release-notes-2
         name: "Release notes for an explicit version"
         uses: ./
         with:
           file: ./test/CHANGELOG.md
           version: 2.2.0.0
 
-      - id: release-notes-v2.2
+      - id: release-notes-3
         name: "Release notes for an explicit version (with v-prefix)"
         uses: ./
         with:
           file: ./test/CHANGELOG.md
           version: v2.2.0.0
 
-      - id: release-notes-not-found
+      - id: release-notes-4
         name: "Release notes for non-existent version"
         uses: ./
         with:
@@ -38,7 +38,7 @@ jobs:
 
       - name: Assertions
         run: |
-          diff test/latest.md "${{ steps.release-notes.outputs.path }}"
-          diff test/v2.2.0.0.md "${{ steps.release-notes-2.2.outputs.path }}"
-          diff test/v2.2.0.0.md "${{ steps.release-notes-v2.2.outputs.path }}"
-          [[ ! -s "${{ steps.release-notes-not-found.outputs.path }}" ]]
+          diff test/v2.2.1.0.md "${{ steps.release-notes-1.outputs.path }}"
+          diff test/v2.2.0.0.md "${{ steps.release-notes-2.outputs.path }}"
+          diff test/v2.2.0.0.md "${{ steps.release-notes-3.outputs.path }}"
+          [[ ! -s "${{ steps.release-notes-4.outputs.path }}" ]]
