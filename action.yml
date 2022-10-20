@@ -11,36 +11,51 @@ inputs:
       default.
     required: true
     default: ""
+  header-regex:
+    description: |
+      Regular expression for marking version sections.
+
+      This must capture the version itself as the first group. The default is a
+      level-2 markdown header that is a conventional version as a link.
+
+      ^## [(v0.0.0-suffix)]
+
+    required: true
+    default: '^## \[(v?[0-9.]+[^]\s]*)]'
 outputs:
-  body:
-    description: The section of CHANGELOG, if found
-    value: ${{ steps.run.outputs.body }}
-  found:
-    description: true|false to indicate if a CHANGELOG section was found
-    value: ${{ steps.run.outputs.found }}
+  path:
+    description: |
+      The temporary file path where the release notes were written
+    value: ${{ steps.run.outputs.path }}
 runs:
   using: composite
   steps:
     - id: run
-      shell: bash
-      run: |
-        body=$(
-          ${{ github.action_path }}/bin/get-release-notes \
-            "${{ inputs.version }}" < "${{ inputs.file }}"
-        )
+      env:
+        FILE=${{ inputs.version }}
+        VERSION=${{ inputs.file }}
+        HEADER_REGEX=${{ inputs.header-regex }}
+      shell: bash run: |
+        path=$(mktemp)
+        echo "path=$path" >>"$GITHUB_OUTPUT"
 
-        if [[ -n "$body" ]]; then
-          found=true
-        else
-          found=false
-        fi
+        while read -r; do
+          if [[ "$REPLY" =~ $HEADER_REGEX ]]; then
+            if [[ -z "$VERSION" ]]; then
+              VERSION=${BASH_REMATCH[1]}
+            fi
 
-        # https://trstringer.com/github-actions-multiline-strings/
-        body="${body//'%'/'%25'}"
-        body="${body//$'\n'/'%0A'}"
-        body="${body//$'\r'/'%0D'}"
+            case "${BASH_REMATCH[1]}" in
+              "v$VERSION" | "$VERSION")
+                output=1
+                ;;
+              *)
+                output=0
+                ;;
+            esac
+          fi
 
-        cat >>"$GITHUB_OUTPUT" <<EOM
-        body=$body
-        found=$found
-        EOM
+          if ((output)); then
+            echo "$REPLY"
+          fi
+        done <"$FILE" | tee "$path"
