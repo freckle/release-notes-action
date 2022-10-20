@@ -10,81 +10,39 @@ jobs:
       - uses: actions/checkout@v3
 
       - id: release-notes
+        name: "Release notes for latest version"
         uses: ./
         with:
-          file: ./files/CHANGELOG.md
-
+          file: ./test/CHANGELOG.md
       - run: |
-          actual=${{ steps.release-notes.outputs.path }}
-          expected=$(mktemp)
+          diff test/latest.md "${{ steps.release-notes.outputs.path }}"
 
-          cat >"$expected" <<'EOM'
-          ## [v2.2.1.0](https://github.com/freckle/platform/compare/v2.2.0.0...v2.2.1.0)
+      - id: release-notes-2.2
+        name: "Release notes for an explicit version"
+        uses: ./
+        with:
+          file: ./test/CHANGELOG.md
+          version: 2.2.0.0
+      - run: |
+          diff test/v2.2.0.0.md "${{ steps.release-notes-2.2.outputs.path }}"
 
-          - Support a single `.platform.yaml`
+      - id: release-notes-v2.2
+        name: "Release notes for an explicit version (with v-prefix)"
+        uses: ./
+        with:
+          file: ./test/CHANGELOG.md
+          version: v2.2.0.0
+      - run: |
+          diff test/v2.2.0.0.md "${{ steps.release-notes-v2.2.outputs.path }}"
 
-            The following,
-
-            ```yaml
-            # $app/.platform/$resource-a.yaml
-            inputs: a
-            environments: b
-            uses: x
-            with: y
-
-            # $app/.platform/$resource-b.yaml
-            inputs: a
-            environments: b
-            uses: x
-            with: y
-            ```
-
-            can now be simplified to,
-
-            ```yaml
-            # $app/.platform.yaml
-            inputs: a
-            environments: b
-            resources:
-              - name: $resource-a
-                uses: x
-                with: y
-              - name: $resource-b
-                uses: x
-                with: y
-            ```
-
-            **NOTE**: you are encouraged to move to this style, support for separate
-            resource files will be deprecated and removed in a future version.
-
-          - Support multiple arguments to `query`
-
-            ```
-            platform query x y
-
-            # Behaves the same as
-            platform query x
-            platform query y
-            ```
-
-          EOM
-
-          diff "$expected" "$actual"
-
-      # - id: explicit
-      #   uses: ./
-      #   with:
-      #     file: ./files/CHANGELOG.md
-      #     version: 2.2.0.0
-
-      # - id: explicit-v
-      #   uses: ./
-      #   with:
-      #     file: ./files/CHANGELOG.md
-      #     version: v2.2.0.0
-
-      # - id: not-found
-      #   uses: ./
-      #   with:
-      #     file: ./files/CHANGELOG.md
-      #     version: v42.42.42
+      - id: release-notes-not-found
+        name: "Release notes for non-existent version"
+        uses: ./
+        with:
+          file: ./test/CHANGELOG.md
+          version: v42.42.42
+      - run: |
+          if [[ -s "${{ steps.release-notes-not-found.outputs.path }}" ]]; then
+            echo "release-notes were incorrectly found for v42.42.42" >&2
+            exit 1
+          fi
