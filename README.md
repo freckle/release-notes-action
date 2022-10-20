@@ -10,9 +10,7 @@ steps:
 
   - id: release-notes
     uses: freckle/release-notes-action@v1
-
-    # All optional, default shown
-    with:
+    with: # All optional, defaults shown
       file: ./CHANGELOG.md
       version: ""
       version-header-regex: '^## \[(v?[0-9.]+[^]\s]*)]'
