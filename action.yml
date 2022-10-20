@@ -1,0 +1,46 @@
+name: Release notes
+description: Build release notes from a CHANGELOG
+inputs:
+  file:
+    description: Location of CHANGELOG file, default is ./CHANGELOG.md
+    require: true
+    default: "./CHANGELOG.md"
+  version:
+    description: |
+      Version to pull CHANGELOG section for. Empty means "latest", and is the
+      default.
+    required: true
+    default: ""
+outputs:
+  body:
+    description: The section of CHANGELOG, if found
+    value: ${{ steps.run.outputs.body }}
+  found:
+    description: true|false to indicate if a CHANGELOG section was found
+    value: ${{ steps.run.outputs.found }}
+runs:
+  using: composite
+  steps:
+    - id: run
+      shell: bash
+      run: |
+        body=$(
+          ${{ github.action_path }}/bin/get-release-notes \
+            "${{ inputs.version }}" < "${{ inputs.file }}"
+        )
+
+        if [[ -n "$body" ]]; then
+          found=true
+        else
+          found=false
+        fi
+
+        # https://trstringer.com/github-actions-multiline-strings/
+        body="${body//'%'/'%25'}"
+        body="${body//$'\n'/'%0A'}"
+        body="${body//$'\r'/'%0D'}"
+
+        cat >>"$GITHUB_OUTPUT" <<EOM
+        body=$body
+        found=$found
+        EOM

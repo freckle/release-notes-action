@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+version=${1:-""}
+
+version_re='v?[0-9.]+[^])\s]*'
+vheader_re="^## \[($version_re)]"
+output=0
+
+if [[ -n "$version" ]] && [[ ! "$version" =~ $version_re ]]; then
+  cat >&2 <<EOM
+Argument does not look like a version:
+
+  "$version" does not match /$version_re/
+
+EOM
+  exit 1
+fi
+
+while read -r; do
+  if [[ "$REPLY" =~ $vheader_re ]]; then
+    if [[ -z "$version" ]]; then
+      version=${BASH_REMATCH[1]}
+    fi
+
+    case "${BASH_REMATCH[1]}" in
+      "v$version" | "$version")
+        output=1
+        ;;
+      *)
+        output=0
+        ;;
+    esac
+  fi
+
+  if ((output)); then
+    echo "$REPLY"
+  fi
+done
