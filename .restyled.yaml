@@ -1,0 +1,10 @@
+restylers:
+  - prettier-markdown:
+      include:
+        - "**/*.md"
+        - "!test/**/*"
+  - whitespace:
+      include:
+        - "**/*"
+        - "!test/**/*"
+  - "*"
